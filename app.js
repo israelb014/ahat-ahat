@@ -4,7 +4,7 @@
    אחת אחת — מעקב בלחיצה אחת
    ============================================================ */
 
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '1.1.0';
 const STORAGE_KEY = 'ahat-ahat-v1';
 const MAX_BUTTONS = 10;
 const DAY_MS = 86400000;
@@ -12,21 +12,28 @@ const DAY_MS = 86400000;
 /* ---------- Palette & units ---------- */
 
 const PALETTE = [
-  '#FF6B5B', // coral
-  '#FFB547', // amber
-  '#B5E05A', // lime
-  '#3DDC97', // mint
-  '#2EC4C9', // teal
-  '#4EA8FF', // sky
-  '#7C7CFF', // indigo
-  '#B57BFF', // violet
-  '#FF6FB5', // pink
-  '#D9B48F', // sand
+  '#FF7A50', // orange
+  '#3D8FD6', // blue
+  '#F2B21B', // yellow
+  '#7A6CF0', // purple
+  '#33B36F', // green
+  '#FF5FA8', // pink
+  '#14B8A6', // teal
+  '#E5484D', // red
+  '#A0785A', // brown
+  '#9AA0AD', // gray
 ];
 const C = {
-  coral: PALETTE[0], amber: PALETTE[1], lime: PALETTE[2], mint: PALETTE[3], teal: PALETTE[4],
-  sky: PALETTE[5], indigo: PALETTE[6], violet: PALETTE[7], pink: PALETTE[8], sand: PALETTE[9],
+  orange: PALETTE[0], blue: PALETTE[1], yellow: PALETTE[2], purple: PALETTE[3], green: PALETTE[4],
+  pink: PALETTE[5], teal: PALETTE[6], red: PALETTE[7], brown: PALETTE[8], gray: PALETTE[9],
 };
+// Colors saved by v1.0 map to their closest v1.1 palette color when displayed
+const LEGACY_COLORS = {
+  '#FF6B5B': C.orange, '#FFB547': C.yellow, '#B5E05A': C.green, '#3DDC97': C.green, '#2EC4C9': C.teal,
+  '#4EA8FF': C.blue, '#7C7CFF': C.purple, '#B57BFF': C.purple, '#FF6FB5': C.pink, '#D9B48F': C.brown,
+  '#6B7285': C.gray,
+};
+const displayColor = hex => LEGACY_COLORS[String(hex).toUpperCase()] || hex || C.gray;
 
 const UNITS = ['מ"ל', 'גרם', 'דקות', 'קומות', 'פעמים', ''];
 
@@ -68,6 +75,8 @@ const UI = {
   home: '<path d="M4 10.5 12 4l8 6.5V19a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H5.5A1.5 1.5 0 0 1 4 19z"/>',
   chart: '<path d="M4 20h16"/><path d="M7 16v-5M12 16V6M17 16v-8"/>',
   gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+  play: '<path d="M8 5.5v13l10.5-6.5z"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
   chevPrev: '<path d="m9 6 6 6-6 6"/>',   // RTL: previous points right
   chevNext: '<path d="m15 6-6 6 6 6"/>',  // RTL: next points left
   up: '<path d="m6 15 6-6 6 6"/>',
@@ -85,7 +94,7 @@ const UI = {
 };
 
 function svg(inner, cls = '') {
-  return `<svg class="ic ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+  return `<svg class="ic ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
 }
 const icon = (name, cls) => svg(ICONS[name] || ICONS.star, cls);
 const ui = (name, cls) => svg(UI[name], cls);
@@ -93,35 +102,35 @@ const ui = (name, cls) => svg(UI[name], cls);
 /* ---------- Templates ---------- */
 
 const MEALS = ['בוקר', 'צהריים', 'ערב', 'נשנוש'];
-const DIAPER = { label: 'טיטול', icon: 'diaper', color: C.amber, options: ['פיפי', 'קקי', 'שניהם'], defaultOption: 'פיפי' };
-const SLEEP = { label: 'שינה', kind: 'duration', startLabel: 'נרדם', endLabel: 'קם', icon: 'moon', color: C.indigo };
+const DIAPER = { label: 'טיטול', icon: 'diaper', color: C.yellow, options: ['פיפי', 'קקי', 'שניהם'], defaultOption: 'פיפי' };
+const SLEEP = { label: 'שינה', kind: 'duration', startLabel: 'נרדם', endLabel: 'קם', icon: 'moon', color: C.purple };
 const MISC = { label: 'תרופה/שונות', icon: 'pill', color: C.pink };
 
 const TEMPLATES = {
   baby: {
-    name: 'תינוק 0-1', icon: 'bottle', color: C.coral,
+    name: 'תינוק 0-1', icon: 'bottle', color: C.orange,
     buttons: [
-      { label: 'אכל', icon: 'bottle', color: C.coral, amount: 120, unit: 'מ"ל' },
-      { label: 'שתה', icon: 'cup', color: C.sky, amount: 30, unit: 'מ"ל' },
+      { label: 'אכל', icon: 'bottle', color: C.orange, amount: 120, unit: 'מ"ל' },
+      { label: 'שתה', icon: 'cup', color: C.blue, amount: 30, unit: 'מ"ל' },
       DIAPER, SLEEP, MISC,
     ],
   },
   toddler: {
-    name: 'פעוט 1-3', icon: 'ball', color: C.lime,
+    name: 'פעוט 1-3', icon: 'ball', color: C.green,
     buttons: [
-      { label: 'ארוחה', icon: 'plate', color: C.lime, options: MEALS, defaultOption: 'בוקר' },
-      { label: 'שתה', icon: 'cup', color: C.sky, amount: 100, unit: 'מ"ל' },
+      { label: 'ארוחה', icon: 'plate', color: C.green, options: MEALS, defaultOption: 'בוקר' },
+      { label: 'שתה', icon: 'cup', color: C.blue, amount: 100, unit: 'מ"ל' },
       DIAPER, SLEEP, MISC,
     ],
   },
   kid: {
-    name: 'ילד 3+', icon: 'star', color: C.amber,
+    name: 'ילד 3+', icon: 'star', color: C.yellow,
     buttons: [
       { label: 'שירותים', icon: 'toilet', color: C.teal },
-      { label: 'פספוס', icon: 'drop', color: C.amber },
-      { label: 'משחק בחצר', kind: 'duration', startLabel: 'התחיל', endLabel: 'סיים', icon: 'tree', color: C.mint },
-      { label: 'מסך', kind: 'duration', startLabel: 'התחיל', endLabel: 'סיים', icon: 'screen', color: C.violet },
-      { label: 'ארוחה', icon: 'plate', color: C.coral, options: MEALS, defaultOption: 'בוקר' },
+      { label: 'פספוס', icon: 'drop', color: C.yellow },
+      { label: 'משחק בחצר', kind: 'duration', startLabel: 'התחיל', endLabel: 'סיים', icon: 'tree', color: C.green },
+      { label: 'מסך', kind: 'duration', startLabel: 'התחיל', endLabel: 'סיים', icon: 'screen', color: C.purple },
+      { label: 'ארוחה', icon: 'plate', color: C.orange, options: MEALS, defaultOption: 'בוקר' },
       MISC,
     ],
   },
@@ -129,24 +138,24 @@ const TEMPLATES = {
     name: 'קשיש', icon: 'heart', color: C.pink,
     buttons: [
       { label: 'תרופות', icon: 'pill', color: C.pink, options: ['בוקר', 'צהריים', 'ערב'], defaultOption: 'בוקר' },
-      { label: 'שתה', icon: 'cup', color: C.sky, amount: 200, unit: 'מ"ל' },
+      { label: 'שתה', icon: 'cup', color: C.blue, amount: 200, unit: 'מ"ל' },
       { label: 'שירותים', icon: 'toilet', color: C.teal },
-      { label: 'הליכה', kind: 'duration', startLabel: 'התחיל', endLabel: 'סיים', icon: 'walk', color: C.lime },
-      { label: 'ארוחה', icon: 'plate', color: C.amber },
-      { label: 'לחץ דם', icon: 'heart', color: C.coral },
+      { label: 'הליכה', kind: 'duration', startLabel: 'התחיל', endLabel: 'סיים', icon: 'walk', color: C.green },
+      { label: 'ארוחה', icon: 'plate', color: C.yellow },
+      { label: 'לחץ דם', icon: 'heart', color: C.red },
     ],
   },
   sport: {
-    name: 'ספורט', icon: 'dumbbell', color: C.sky,
+    name: 'ספורט', icon: 'dumbbell', color: C.blue,
     buttons: [
-      { label: 'מים', icon: 'drop', color: C.sky, amount: 250, unit: 'מ"ל' },
-      { label: 'משקולות', kind: 'duration', startLabel: 'התחיל', endLabel: 'סיים', icon: 'dumbbell', color: C.coral },
-      { label: 'מדרגות', icon: 'stairs', color: C.amber, amount: 5, unit: 'קומות' },
-      { label: 'רכיבה', kind: 'duration', startLabel: 'התחיל', endLabel: 'סיים', icon: 'bike', color: C.mint },
-      { label: 'ארוחת חלבון', icon: 'plate', color: C.violet, amount: 30, unit: 'גרם' },
+      { label: 'מים', icon: 'drop', color: C.blue, amount: 250, unit: 'מ"ל' },
+      { label: 'משקולות', kind: 'duration', startLabel: 'התחיל', endLabel: 'סיים', icon: 'dumbbell', color: C.red },
+      { label: 'מדרגות', icon: 'stairs', color: C.yellow, amount: 5, unit: 'קומות' },
+      { label: 'רכיבה', kind: 'duration', startLabel: 'התחיל', endLabel: 'סיים', icon: 'bike', color: C.green },
+      { label: 'ארוחת חלבון', icon: 'plate', color: C.brown, amount: 30, unit: 'גרם' },
     ],
   },
-  empty: { name: 'ריק', icon: 'plus', color: C.sand, buttons: [] },
+  empty: { name: 'ריק', icon: 'plus', color: C.gray, buttons: [] },
 };
 
 /* ---------- Utils ---------- */
@@ -162,7 +171,7 @@ const fmtNum = n => (Math.round(n * 10) / 10).toLocaleString('he-IL');
 const startOfDay = ts => { const d = new Date(ts); d.setHours(0, 0, 0, 0); return d.getTime(); };
 const addDays = (ts, n) => { const d = new Date(ts); d.setDate(d.getDate() + n); return startOfDay(d.getTime()); };
 const hexRgb = hex => { const h = hex.replace('#', ''); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16)).join(','); };
-const colorVars = hex => `--c:${hex};--c-rgb:${hexRgb(hex)}`;
+const colorVars = hex => { const c = displayColor(hex); return `--c:${c};--c-rgb:${hexRgb(c)}`; };
 const wrapLabel = s => esc(s).replace(/\//g, '/<wbr>');
 const unitText = (amount, unit) => unit ? `${fmtNum(amount)} ${unit}` : fmtNum(amount);
 
@@ -248,11 +257,34 @@ function newEvent(p, b, now) {
 let tab = 'main';
 let viewDay = startOfDay(Date.now());
 
+let sub = null; // settings inner page: null | 'button' | 'template'
+
 /* ---------- Rendering: shell ---------- */
 
+const weekdayName = ts => new Date(ts).toLocaleDateString('he-IL', { weekday: 'long' });
+
+function headerHTML(small, title) {
+  return `
+  <header class="phead">
+    <div class="phead-text">
+      <span class="phead-small">${esc(small)}</span>
+      <h1>${esc(title)}</h1>
+    </div>
+    <button class="circle-btn" data-action="open-drawer" aria-label="פרופילים">${ui('menu')}</button>
+  </header>`;
+}
+
+function backHTML(title) {
+  return `
+  <header class="phead sub">
+    <button class="back-btn" data-action="back"><span class="circle-btn">${ui('chevPrev')}</span><span>הגדרות</span></button>
+    <h1>${esc(title)}</h1>
+  </header>`;
+}
+
+const sq = (iconName, color, cls = '') => `<span class="sq ${cls}" style="${colorVars(color)}">${icon(iconName)}</span>`;
+
 function renderShell() {
-  const p = currentProfile();
-  $('#profileName').textContent = p ? p.name : '';
   $$('.tab').forEach(t => {
     const on = t.dataset.tab === tab;
     t.classList.toggle('on', on);
@@ -267,47 +299,74 @@ function render() {
   if (!p) { view.innerHTML = ''; return; }
   if (tab === 'main') view.innerHTML = mainHTML(p);
   else if (tab === 'data') view.innerHTML = dataHTML(p);
+  else if (sub === 'button' && draft) { view.innerHTML = '<div id="btnEditor"></div>'; renderButtonEditor(); }
+  else if (sub === 'template') view.innerHTML = templatePageHTML(p);
   else view.innerHTML = settingsHTML(p);
   view.dataset.tab = tab;
   if (tab === 'data') requestAnimationFrame(() => $$('.ring-prog', view).forEach(r => r.classList.add('in')));
 }
 
-function switchTab(t) {
-  if (t === tab) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
-  tab = t;
-  if (t === 'data') viewDay = startOfDay(Date.now());
-  window.scrollTo(0, 0);
+function fadeView() {
   const view = $('#view');
   view.classList.remove('enter');
-  render();
   void view.offsetWidth;
   view.classList.add('enter');
 }
 
+function switchTab(t) {
+  if (t === tab && !sub) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+  tab = t;
+  sub = null;
+  draft = null;
+  if (t === 'data') viewDay = startOfDay(Date.now());
+  window.scrollTo(0, 0);
+  render();
+  fadeView();
+}
+
+function openSub(name) {
+  sub = name;
+  window.scrollTo(0, 0);
+  render();
+  fadeView();
+}
+
+function closeSub() {
+  sub = null;
+  draft = null;
+  window.scrollTo(0, 0);
+  render();
+  fadeView();
+}
+
 /* ---------- Main screen ---------- */
 
-function tapButtonHTML(p, b, i) {
-  const act = b.kind === 'duration' ? activeEvent(p.id, b.id) : null;
+function tapButtonHTML(p, b) {
+  const dur = b.kind === 'duration';
+  const act = dur ? activeEvent(p.id, b.id) : null;
   return `
-  <button class="tap ${b.kind === 'duration' ? 'is-duration' : ''} ${act ? 'active' : ''}" style="${colorVars(b.color)};--i:${i}" data-action="press" data-id="${b.id}" aria-pressed="${act ? 'true' : 'false'}">
-    <svg class="tap-ring" aria-hidden="true"><rect class="tap-ring-track" x="2" y="2" rx="22" pathLength="100"/><rect class="tap-ring-run" x="2" y="2" rx="22" pathLength="100"/></svg>
-    <span class="tap-ic">${icon(b.icon)}</span>
-    <span class="tap-label">${wrapLabel(b.label)}</span>
-    ${b.kind === 'duration' ? `<span class="tap-action">${esc(act ? b.endLabel : b.startLabel)}</span>` : ''}
+  <button class="row tap ${dur ? 'is-duration' : ''} ${act ? 'active' : ''}" style="${colorVars(b.color)}" data-action="press" data-id="${b.id}" aria-pressed="${act ? 'true' : 'false'}">
+    ${sq(b.icon, b.color)}
+    <span class="row-title tap-label">${wrapLabel(act ? b.endLabel : b.label)}</span>
+    <span class="tap-end" aria-hidden="true">
+      ${dur
+        ? `<span class="act-idle">${ui('play')}</span><span class="act-on"><i class="live-dot"></i></span>`
+        : `<span class="act-idle">${ui('plus')}</span><span class="act-on">${ui('check')}</span>`}
+    </span>
   </button>`;
 }
 
 function mainHTML(p) {
+  const head = headerHTML(weekdayName(Date.now()), p.name);
   if (!p.buttons.length) {
-    return `
-    <section class="empty-state card">
-      <div class="empty-ic">${ui('tap')}</div>
-      <h2>אין עדיין כפתורים</h2>
-      <p>הוסיפו כפתורים בהגדרות, או החילו תבנית מוכנה.</p>
-      <button class="btn btn-primary" data-action="goto-settings">${ui('gear')}<span>להגדרות</span></button>
+    return `${head}
+    <section class="group empty-state">
+      <p class="empty-title">אין עדיין כפתורים</p>
+      <p class="empty-text">הוסיפו כפתורים בהגדרות, או החילו תבנית מוכנה.</p>
+      <button class="btn-primary" data-action="goto-settings">להגדרות</button>
     </section>`;
   }
-  return `<section class="grid">${p.buttons.map((b, i) => tapButtonHTML(p, b, i)).join('')}</section>`;
+  return `${head}<section class="group">${p.buttons.map(b => tapButtonHTML(p, b)).join('')}</section>`;
 }
 
 function press(el) {
@@ -322,16 +381,15 @@ function press(el) {
     const on = !act;
     el.classList.toggle('active', on);
     el.setAttribute('aria-pressed', on ? 'true' : 'false');
-    const a = $('.tap-action', el);
-    if (a) a.textContent = on ? b.endLabel : b.startLabel;
+    $('.tap-label', el).innerHTML = wrapLabel(on ? b.endLabel : b.label);
   } else {
     state.events.push(newEvent(p, b, now));
+    clearTimeout(el._doneTimer);
+    el.classList.add('done');
+    el._doneTimer = setTimeout(() => el.classList.remove('done'), 700);
   }
   save();
   if (navigator.vibrate) { try { navigator.vibrate(30); } catch (e) { /* ignore */ } }
-  el.classList.remove('pulse');
-  void el.offsetWidth;
-  el.classList.add('pulse');
 }
 
 /* ---------- Data screen ---------- */
@@ -340,9 +398,7 @@ function dayLabel(ts) {
   const today = startOfDay(Date.now());
   if (ts === today) return 'היום';
   if (ts === addDays(today, -1)) return 'אתמול';
-  const d = new Date(ts);
-  const wd = d.toLocaleDateString('he-IL', { weekday: 'long' });
-  return wd;
+  return weekdayName(ts);
 }
 function dayDate(ts) {
   const d = new Date(ts);
@@ -360,7 +416,7 @@ function summarize(p, evs) {
   p.buttons.forEach(b => groups.set(b.id, { id: b.id, label: b.label, color: b.color, icon: b.icon, kind: b.kind, unit: b.unit, options: [...b.options], evs: [] }));
   evs.slice().sort((a, b) => a.start - b.start).forEach(e => {
     if (!groups.has(e.buttonId)) {
-      groups.set(e.buttonId, { id: e.buttonId, label: e.label || 'כפתור שנמחק', color: '#6B7285', icon: 'note', kind: e.kind || (e.end != null ? 'duration' : 'instant'), unit: e.unit || '', options: [], evs: [], deleted: true });
+      groups.set(e.buttonId, { id: e.buttonId, label: e.label || 'כפתור שנמחק', color: C.gray, icon: 'note', kind: e.kind || (e.end != null ? 'duration' : 'instant'), unit: e.unit || '', options: [], evs: [], deleted: true });
     }
     groups.get(e.buttonId).evs.push(e);
   });
@@ -382,39 +438,43 @@ function summarize(p, evs) {
   return list;
 }
 
-function ringHTML(s) {
-  let main, sub;
-  if (s.kind === 'duration') { main = fmtDur(s.dur); sub = 'שעות'; }
-  else if (s.hasAmount && s.unit && s.unit !== 'פעמים') { main = fmtNum(s.amount); sub = s.unit; }
-  else { main = String(s.count); sub = s.count === 1 ? 'פעם' : 'פעמים'; }
-  const off = 100 - s.pct * 100;
+const timesText = n => `${n} ${n === 1 ? 'פעם' : 'פעמים'}`;
+
+function miniRingHTML(pct) {
   return `
-  <div class="ring">
-    <svg viewBox="0 0 100 100" aria-hidden="true">
-      <circle class="ring-track" cx="50" cy="50" r="42" pathLength="100"/>
-      ${s.pct > 0 ? `<circle class="ring-prog" cx="50" cy="50" r="42" pathLength="100" style="--off:${off}"/>` : ''}
-    </svg>
-    <div class="ring-val"><b>${esc(main)}</b><small>${esc(sub)}</small></div>
-  </div>`;
+  <svg class="mini-ring" viewBox="0 0 22 22" aria-hidden="true">
+    <circle class="ring-track" cx="11" cy="11" r="8.5" pathLength="100"/>
+    ${pct > 0 ? `<circle class="ring-prog" cx="11" cy="11" r="8.5" pathLength="100" style="--off:${100 - pct * 100}"/>` : ''}
+  </svg>`;
 }
 
-function summaryCardHTML(s, i) {
-  const showCount = s.kind === 'duration' || (s.hasAmount && s.unit && s.unit !== 'פעמים');
+function summaryRowHTML(s) {
+  let value;
+  const amountMain = s.hasAmount && s.unit && s.unit !== 'פעמים';
+  if (s.kind === 'duration') value = `${fmtDur(s.dur)} ש'`;
+  else if (amountMain) value = unitText(s.amount, s.unit);
+  else value = timesText(s.count);
+  const subs = [];
+  if (s.kind === 'duration' || amountMain) subs.push(timesText(s.count));
   const opts = s.opts.filter(([, n]) => n > 0 || s.options.length);
+  if (opts.length) subs.push(opts.map(([o, n]) => `${esc(o)} ${n}`).join(' · '));
   return `
-  <article class="sum card ${s.count ? '' : 'zero'} ${s.deleted ? 'deleted' : ''}" style="${colorVars(s.color)};--i:${i}">
-    ${ringHTML(s)}
-    <div class="sum-label"><span class="sum-ic">${icon(s.icon)}</span>${esc(s.label)}</div>
-    ${showCount ? `<div class="sum-sub">${s.count} ${s.count === 1 ? 'פעם' : 'פעמים'}</div>` : ''}
-    ${opts.length ? `<div class="sum-opts">${opts.map(([o, n]) => `<span class="chip ${n ? '' : 'dim'}">${esc(o)} <b>${n}</b></span>`).join('')}</div>` : ''}
-  </article>`;
+  <div class="row sum ${s.count ? '' : 'zero'}" style="${colorVars(s.color)}">
+    ${sq(s.icon, s.color)}
+    <span class="row-main">
+      <span class="row-title">${esc(s.label)}</span>
+      ${subs.length ? `<span class="row-sub">${subs.join(' · ')}</span>` : ''}
+    </span>
+    <span class="sum-val">${esc(value)}</span>
+    ${miniRingHTML(s.pct)}
+  </div>`;
 }
 
 function eventMeta(p, e) {
   const b = p.buttons.find(x => x.id === e.buttonId);
   return {
     label: b ? b.label : (e.label || 'כפתור שנמחק'),
-    color: b ? b.color : '#6B7285',
+    color: b ? b.color : C.gray,
     icon: b ? b.icon : 'note',
     kind: e.kind || (b ? b.kind : 'instant'),
   };
@@ -422,34 +482,33 @@ function eventMeta(p, e) {
 
 function timelineHTML(p, evs) {
   if (!evs.length) {
-    return `<div class="tl-empty card">${ui('clock')}<span>אין רישומים ביום הזה</span></div>`;
+    return `<div class="group"><div class="row empty-row">${ui('clock')}<span>אין רישומים ביום הזה</span></div></div>`;
   }
   const now = Date.now();
-  const items = evs.slice().sort((a, b) => b.start - a.start).map((e, i) => {
+  const items = evs.slice().sort((a, b) => b.start - a.start).map(e => {
     const m = eventMeta(p, e);
-    const bits = [];
-    if (e.option) bits.push(`<span class="chip">${esc(e.option)}</span>`);
-    if (typeof e.amount === 'number' && e.unit) bits.push(`<span>${esc(unitText(e.amount, e.unit))}</span>`);
+    const inline = [];
+    if (typeof e.amount === 'number' && e.unit) inline.push(esc(unitText(e.amount, e.unit)));
+    if (e.option) inline.push(esc(e.option));
+    let durLine = '';
     if (m.kind === 'duration') {
-      bits.push(e.end != null
-        ? `<span>${fmtTime(e.start)}–${fmtTime(e.end)} · ${fmtDur(e.end - e.start)} שעות</span>`
-        : `<span class="live"><i></i>פעיל · ${fmtDur(now - e.start)} שעות</span>`);
+      durLine = e.end != null
+        ? `<span class="row-sub">${fmtTime(e.start)}–${fmtTime(e.end)} · ${fmtDur(e.end - e.start)} ש'</span>`
+        : `<span class="row-sub live" style="${colorVars(m.color)}"><i class="live-dot"></i>פעיל · ${fmtDur(now - e.start)} ש'</span>`;
     }
     return `
-    <li style="${colorVars(m.color)};--i:${i}">
-      <button class="tl-item" data-action="edit-event" data-id="${e.id}">
-        <time>${fmtTime(e.start)}</time>
-        <span class="tl-dot">${icon(m.icon)}</span>
-        <span class="tl-main">
-          <span class="tl-title">${esc(m.label)}</span>
-          ${bits.length ? `<span class="tl-meta">${bits.join('')}</span>` : ''}
-          ${e.note ? `<span class="tl-note">${esc(e.note)}</span>` : ''}
-        </span>
-        ${ui('chevNext', 'tl-go')}
-      </button>
-    </li>`;
+    <button class="row tl-item" data-action="edit-event" data-id="${e.id}">
+      <time>${fmtTime(e.start)}</time>
+      ${sq(m.icon, m.color, 'sm')}
+      <span class="row-main">
+        <span class="row-title">${esc(m.label)}${inline.length ? ` <span class="tl-inline">${inline.join(' · ')}</span>` : ''}</span>
+        ${durLine}
+        ${e.note ? `<span class="row-sub tl-note">${esc(e.note)}</span>` : ''}
+      </span>
+      ${ui('chevNext', 'row-chev')}
+    </button>`;
   });
-  return `<ol class="timeline">${items.join('')}</ol>`;
+  return `<div class="group">${items.join('')}</div>`;
 }
 
 function dataHTML(p) {
@@ -457,14 +516,14 @@ function dataHTML(p) {
   const evs = eventsForDay(p, viewDay);
   const sums = summarize(p, evs);
   return `
-  <h1 class="page-title">נתונים</h1>
-  <div class="daypick card">
-    <button class="icon-btn" data-action="day-prev" aria-label="יום קודם">${ui('chevPrev')}</button>
+  ${headerHTML(weekdayName(Date.now()), p.name)}
+  <div class="daypick">
+    <button class="circle-btn" data-action="day-prev" aria-label="יום קודם">${ui('chevPrev')}</button>
     <div class="daypick-label"><b>${esc(dayLabel(viewDay))}</b><small>${dayDate(viewDay)}</small></div>
-    <button class="icon-btn" data-action="day-next" aria-label="יום הבא" ${viewDay >= today ? 'disabled' : ''}>${ui('chevNext')}</button>
+    <button class="circle-btn" data-action="day-next" aria-label="יום הבא" ${viewDay >= today ? 'disabled' : ''}>${ui('chevNext')}</button>
   </div>
-  ${sums.length ? `<section class="sums">${sums.map(summaryCardHTML).join('')}</section>` : ''}
-  <h2 class="section-title">ציר זמן</h2>
+  ${sums.length ? `<h2 class="gtitle">סיכום</h2><section class="group">${sums.map(summaryRowHTML).join('')}</section>` : ''}
+  <h2 class="gtitle">ציר זמן</h2>
   ${timelineHTML(p, evs)}`;
 }
 
@@ -490,22 +549,24 @@ function openEventEditor(id) {
   const isDur = m.kind === 'duration';
 
   openSheet(`
-    <div class="sheet-head" style="${colorVars(m.color)}">
-      <span class="sheet-ic">${icon(m.icon)}</span>
+    <div class="sheet-head">
+      ${sq(m.icon, m.color, 'lg')}
       <div><h2>${esc(m.label)}</h2><small>${esc(dayDate(e.start))}</small></div>
     </div>
     <form class="form" id="eventForm" autocomplete="off">
-      <div class="row2">
-        <label class="field"><span>${isDur ? 'התחלה' : 'שעה'}</span><input type="time" name="start" value="${timeInputValue(e.start)}" required></label>
-        ${isDur ? `<label class="field"><span>סיום</span><input type="time" name="end" value="${timeInputValue(e.end)}"><em>${e.end == null ? 'ריק = עדיין פעיל' : ''}</em></label>` : ''}
+      <div class="group">
+        <label class="row noicon"><span class="row-title">${isDur ? 'התחלה' : 'שעה'}</span><input class="row-input time" type="time" name="start" value="${timeInputValue(e.start)}" required></label>
+        ${isDur ? `<label class="row noicon"><span class="row-title">סיום</span><input class="row-input time" type="time" name="end" value="${timeInputValue(e.end)}"></label>` : ''}
+        ${showAmount ? `<label class="row noicon"><span class="row-title">כמות</span><span class="row-input-wrap"><input class="row-input" type="number" inputmode="decimal" step="any" min="0" name="amount" value="${e.amount ?? ''}" placeholder="0">${e.unit ? `<i>${esc(e.unit)}</i>` : ''}</span></label>` : ''}
       </div>
-      ${showAmount ? `<label class="field"><span>כמות</span><div class="with-unit"><input type="number" inputmode="decimal" step="any" min="0" name="amount" value="${e.amount ?? ''}">${e.unit ? `<i>${esc(e.unit)}</i>` : ''}</div></label>` : ''}
-      ${options.length ? `<fieldset class="field"><span>אפשרות</span><div class="seg wrap">${options.map(o => `
-        <label class="seg-opt"><input type="radio" name="option" value="${esc(o)}" ${o === e.option ? 'checked' : ''}><span>${esc(o)}</span></label>`).join('')}</div></fieldset>` : ''}
-      <label class="field"><span>הערה</span><textarea name="note" rows="3" placeholder="${m.label === 'לחץ דם' ? 'למשל 120/80' : 'הערה חופשית'}">${esc(e.note || '')}</textarea></label>
+      ${isDur && e.end == null ? '<p class="footnote">סיום ריק = עדיין פעיל</p>' : ''}
+      ${options.length ? `<h3 class="gtitle">אפשרות</h3><div class="seg wrap">${options.map(o => `
+        <label class="seg-opt"><input type="radio" name="option" value="${esc(o)}" ${o === e.option ? 'checked' : ''}><span>${esc(o)}</span></label>`).join('')}</div>` : ''}
+      <h3 class="gtitle">הערה</h3>
+      <div class="group"><textarea name="note" rows="3" placeholder="${m.label === 'לחץ דם' ? 'למשל 120/80' : 'הערה חופשית'}">${esc(e.note || '')}</textarea></div>
       <div class="form-actions">
-        <button type="submit" class="btn btn-primary">${ui('check')}<span>שמירה</span></button>
-        <button type="button" class="btn btn-ghost-danger" data-action="delete-event" data-id="${e.id}">${ui('trash')}<span>מחיקה</span></button>
+        <button type="submit" class="btn-primary">שמירה</button>
+        <button type="button" class="btn-danger" data-action="delete-event" data-id="${e.id}">מחיקת הרישום</button>
       </div>
     </form>`);
 
@@ -555,51 +616,67 @@ async function deleteEvent(id) {
 
 function settingsHTML(p) {
   const n = p.buttons.length;
+  const t = TEMPLATES[p.template] || TEMPLATES.empty;
   return `
-  <h1 class="page-title">הגדרות</h1>
+  ${headerHTML(p.name, 'הגדרות')}
 
-  <h2 class="section-title">כפתורים <small>${n}/${MAX_BUTTONS}</small></h2>
-  <section class="card list">
-    ${n ? p.buttons.map((b, i) => `
-    <div class="brow" style="${colorVars(b.color)}">
-      <span class="brow-ic">${icon(b.icon)}</span>
-      <span class="brow-main">
-        <b>${esc(b.label)}</b>
-        <small>${b.kind === 'duration' ? `משך · ${esc(b.startLabel)} / ${esc(b.endLabel)}` : 'רגעי'}${b.unit && b.amount != null ? ` · ${esc(unitText(b.amount, b.unit))}` : ''}${b.options.length ? ` · ${b.options.length} אפשרויות` : ''}</small>
+  <h2 class="gtitle">כפתורים <span>${n}/${MAX_BUTTONS}</span></h2>
+  <section class="group">
+    ${p.buttons.map((b, i) => `
+    <div class="row brow" role="button" tabindex="0" data-action="btn-edit" data-id="${b.id}">
+      ${sq(b.icon, b.color)}
+      <span class="row-main">
+        <span class="row-title">${esc(b.label)}</span>
+        <span class="row-sub">${b.kind === 'duration' ? `משך · ${esc(b.startLabel)} / ${esc(b.endLabel)}` : 'רגעי'}${b.unit && b.amount != null ? ` · ${esc(unitText(b.amount, b.unit))}` : ''}${b.options.length ? ` · ${b.options.length} אפשרויות` : ''}</span>
       </span>
-      <span class="brow-act">
-        <button class="icon-btn sm" data-action="btn-up" data-id="${b.id}" aria-label="למעלה" ${i === 0 ? 'disabled' : ''}>${ui('up')}</button>
-        <button class="icon-btn sm" data-action="btn-down" data-id="${b.id}" aria-label="למטה" ${i === n - 1 ? 'disabled' : ''}>${ui('down')}</button>
-        <button class="icon-btn sm" data-action="btn-edit" data-id="${b.id}" aria-label="עריכה">${ui('edit')}</button>
-        <button class="icon-btn sm danger" data-action="btn-delete" data-id="${b.id}" aria-label="מחיקה">${ui('trash')}</button>
+      <span class="reorder">
+        <button class="mini-btn" data-action="btn-up" data-id="${b.id}" aria-label="למעלה" ${i === 0 ? 'disabled' : ''}>${ui('up')}</button>
+        <button class="mini-btn" data-action="btn-down" data-id="${b.id}" aria-label="למטה" ${i === n - 1 ? 'disabled' : ''}>${ui('down')}</button>
       </span>
-    </div>`).join('') : `<p class="list-empty">אין כפתורים בפרופיל הזה</p>`}
-    <button class="btn btn-soft list-add" data-action="btn-add" ${n >= MAX_BUTTONS ? 'disabled' : ''}>${ui('plus')}<span>${n >= MAX_BUTTONS ? 'הגעתם למקסימום של 10 כפתורים' : 'הוסף כפתור'}</span></button>
+      ${ui('chevNext', 'row-chev')}
+    </div>`).join('')}
+    <button class="row add-row" data-action="btn-add" ${n >= MAX_BUTTONS ? 'disabled' : ''}>
+      <span class="sq plain">${ui('plus')}</span>
+      <span class="row-title">${n >= MAX_BUTTONS ? 'הגעתם למקסימום של 10 כפתורים' : 'הוסף כפתור'}</span>
+    </button>
   </section>
 
-  <h2 class="section-title">פרופיל</h2>
-  <section class="card pad">
-    <label class="field"><span>שם הפרופיל</span>
-      <div class="inline"><input type="text" id="profileNameInput" value="${esc(p.name)}" maxlength="30"><button class="btn btn-soft" data-action="rename-profile">שמירה</button></div>
-    </label>
-    <label class="field"><span>החלת תבנית</span>
-      <div class="inline">
-        <select id="templateSelect">${Object.entries(TEMPLATES).map(([k, t]) => `<option value="${k}" ${k === p.template ? 'selected' : ''}>${esc(t.name)}</option>`).join('')}</select>
-        <button class="btn btn-soft" data-action="apply-template">החל</button>
-      </div>
-      <em>מחליף את כל הכפתורים של הפרופיל. הרישומים נשמרים.</em>
-    </label>
-    <button class="btn btn-ghost-danger full" data-action="delete-profile">${ui('trash')}<span>מחיקת הפרופיל</span></button>
+  <h2 class="gtitle">פרופיל</h2>
+  <section class="group">
+    <label class="row noicon"><span class="row-title">שם</span><input class="row-input" type="text" id="profileNameInput" value="${esc(p.name)}" maxlength="30" enterkeyhint="done"></label>
+    <button class="row noicon" data-action="open-templates">
+      <span class="row-title">החלת תבנית</span>
+      <span class="row-value">${esc(t.name)}</span>
+      ${ui('chevNext', 'row-chev')}
+    </button>
+    <button class="row noicon danger-row" data-action="delete-profile"><span class="row-title">מחיקת הפרופיל</span></button>
   </section>
 
-  <h2 class="section-title">גיבוי</h2>
-  <section class="card pad backup">
-    <button class="btn btn-soft" data-action="export">${ui('download')}<span>ייצא לקובץ</span></button>
-    <button class="btn btn-soft" data-action="import">${ui('upload')}<span>ייבא מקובץ</span></button>
-    <em>הנתונים נשמרים רק במכשיר הזה. ייבוא מחליף את כל הנתונים.</em>
+  <h2 class="gtitle">גיבוי</h2>
+  <section class="group">
+    <button class="row" data-action="export"><span class="sq plain">${ui('download')}</span><span class="row-title">ייצא לקובץ</span>${ui('chevNext', 'row-chev')}</button>
+    <button class="row" data-action="import"><span class="sq plain">${ui('upload')}</span><span class="row-title">ייבא מקובץ</span>${ui('chevNext', 'row-chev')}</button>
   </section>
+  <p class="footnote">הנתונים נשמרים רק במכשיר הזה. ייבוא מחליף את כל הנתונים.</p>
 
   <footer class="version">אחת אחת · v${APP_VERSION}</footer>`;
+}
+
+function templatePageHTML(p) {
+  return `
+  ${backHTML('החלת תבנית')}
+  <section class="group">
+    ${Object.entries(TEMPLATES).map(([k, t]) => `
+    <button class="row tpl-row ${k === p.template ? 'on' : ''}" data-action="apply-template" data-tpl="${k}">
+      ${sq(t.icon, t.color)}
+      <span class="row-main">
+        <span class="row-title">${esc(t.name)}</span>
+        <span class="row-sub">${t.buttons.length ? t.buttons.map(b => esc(b.label)).join(' · ') : 'בונים לבד'}</span>
+      </span>
+      <span class="row-check">${ui('check')}</span>
+    </button>`).join('')}
+  </section>
+  <p class="footnote">החלת תבנית מחליפה את כל הכפתורים של הפרופיל. הרישומים נשמרים.</p>`;
 }
 
 function moveButton(id, dir) {
@@ -621,10 +698,10 @@ async function deleteButton(id) {
   closeActiveEvents(p.id, [b.id]);
   p.buttons = p.buttons.filter(x => x.id !== id);
   save();
-  render();
+  if (sub) closeSub(); else render();
 }
 
-/* ---------- Button editor ---------- */
+/* ---------- Button editor (inner page) ---------- */
 
 let draft = null;
 
@@ -634,70 +711,75 @@ function openButtonEditor(id) {
   const b = id ? p.buttons.find(x => x.id === id) : null;
   draft = b ? JSON.parse(JSON.stringify(b)) : makeButton({ color: PALETTE[p.buttons.length % PALETTE.length], icon: 'star' });
   draft._isNew = !b;
+  draft.color = displayColor(draft.color);
   if (!draft.startLabel) draft.startLabel = 'התחיל';
   if (!draft.endLabel) draft.endLabel = 'סיים';
-  openSheet(`<div id="btnEditor"></div>`);
-  renderButtonEditor();
+  openSub('button');
 }
 
 function renderButtonEditor() {
   const host = $('#btnEditor');
   if (!host) return;
   const d = draft;
-  const scroller = $('#sheetBody');
-  const top = scroller.scrollTop;
+  const top = window.scrollY;
   host.innerHTML = `
-    <div class="sheet-head" style="${colorVars(d.color)}">
-      <span class="sheet-ic" id="prevIc">${icon(d.icon)}</span>
-      <div><h2>${d._isNew ? 'כפתור חדש' : 'עריכת כפתור'}</h2><small id="prevLabel">${esc(d.label || 'ללא שם')}</small></div>
-    </div>
+    ${backHTML(d._isNew ? 'כפתור חדש' : 'עריכת כפתור')}
     <form class="form" id="buttonForm" autocomplete="off">
-      <label class="field"><span>שם</span><input type="text" data-f="label" value="${esc(d.label)}" maxlength="18" placeholder="למשל: אכל" required></label>
-
-      <div class="field"><span>סוג</span>
-        <div class="seg">
-          <button type="button" class="seg-btn ${d.kind === 'instant' ? 'on' : ''}" data-kind="instant">רגעי</button>
-          <button type="button" class="seg-btn ${d.kind === 'duration' ? 'on' : ''}" data-kind="duration">משך</button>
+      <section class="group">
+        <div class="row preview" id="prevRow" style="${colorVars(d.color)}">
+          <span class="sq" id="prevIc">${icon(d.icon)}</span>
+          <span class="row-title" id="prevLabel">${esc(d.label || 'ללא שם')}</span>
+          <span class="tap-end">${d.kind === 'duration' ? ui('play') : ui('plus')}</span>
         </div>
-      </div>
-      ${d.kind === 'duration' ? `
-      <div class="row2">
-        <label class="field"><span>שם להתחלה</span><input type="text" data-f="startLabel" value="${esc(d.startLabel)}" maxlength="12" placeholder="נרדם"></label>
-        <label class="field"><span>שם לסיום</span><input type="text" data-f="endLabel" value="${esc(d.endLabel)}" maxlength="12" placeholder="קם"></label>
-      </div>` : ''}
+      </section>
 
-      <div class="field"><span>צבע</span>
-        <div class="swatches">${PALETTE.map(c => `<button type="button" class="swatch ${c === d.color ? 'on' : ''}" style="${colorVars(c)}" data-color="${c}" aria-label="צבע">${ui('check')}</button>`).join('')}</div>
-      </div>
+      <section class="group">
+        <label class="row noicon"><span class="row-title">שם</span><input class="row-input" type="text" data-f="label" value="${esc(d.label)}" maxlength="18" placeholder="למשל: אכל" required></label>
+        <div class="row noicon"><span class="row-title">סוג</span>
+          <div class="seg small">
+            <button type="button" class="seg-btn ${d.kind === 'instant' ? 'on' : ''}" data-kind="instant">רגעי</button>
+            <button type="button" class="seg-btn ${d.kind === 'duration' ? 'on' : ''}" data-kind="duration">משך</button>
+          </div>
+        </div>
+        ${d.kind === 'duration' ? `
+        <label class="row noicon"><span class="row-title">שם להתחלה</span><input class="row-input" type="text" data-f="startLabel" value="${esc(d.startLabel)}" maxlength="12" placeholder="נרדם"></label>
+        <label class="row noicon"><span class="row-title">שם לסיום</span><input class="row-input" type="text" data-f="endLabel" value="${esc(d.endLabel)}" maxlength="12" placeholder="קם"></label>` : ''}
+      </section>
 
-      <div class="field"><span>אייקון</span>
+      <h2 class="gtitle">צבע</h2>
+      <section class="group padded">
+        <div class="swatches">${PALETTE.map(c => `<button type="button" class="swatch ${c === d.color ? 'on' : ''}" style="${colorVars(c)}" data-color="${c}" aria-label="צבע ${c}"></button>`).join('')}</div>
+      </section>
+
+      <h2 class="gtitle">אייקון</h2>
+      <section class="group padded">
         <div class="icons" style="${colorVars(d.color)}">${ICON_ORDER.map(k => `<button type="button" class="icon-pick ${k === d.icon ? 'on' : ''}" data-icon="${k}" aria-label="${ICON_NAMES[k]}" title="${ICON_NAMES[k]}">${icon(k)}</button>`).join('')}</div>
-      </div>
+      </section>
 
-      <div class="row2">
-        <label class="field"><span>כמות ברירת מחדל</span><input type="number" inputmode="decimal" step="any" min="0" data-f="amount" value="${d.amount ?? ''}" ${d.unit ? '' : 'disabled'} placeholder="${d.unit ? '0' : '—'}"></label>
-        <label class="field"><span>יחידה</span><select data-f="unit">${UNITS.map(u => `<option value="${esc(u)}" ${u === d.unit ? 'selected' : ''}>${u ? esc(u) : 'ללא'}</option>`).join('')}</select></label>
-      </div>
+      <h2 class="gtitle">כמות</h2>
+      <section class="group">
+        <label class="row noicon"><span class="row-title">ברירת מחדל</span><input class="row-input" type="number" inputmode="decimal" step="any" min="0" data-f="amount" value="${d.amount ?? ''}" ${d.unit ? '' : 'disabled'} placeholder="${d.unit ? '0' : '—'}"></label>
+        <label class="row noicon"><span class="row-title">יחידה</span><select class="row-select" data-f="unit">${UNITS.map(u => `<option value="${esc(u)}" ${u === d.unit ? 'selected' : ''}>${u ? esc(u) : 'ללא'}</option>`).join('')}</select>${ui('down', 'row-chev')}</label>
+      </section>
 
-      <div class="field"><span>אפשרויות <em class="inline-em">לא חובה</em></span>
-        <div class="opts">
-          ${d.options.map((o, i) => `
-          <div class="opt-row">
-            <label class="opt-default" title="ברירת מחדל"><input type="radio" name="defopt" value="${i}" ${o === d.defaultOption ? 'checked' : ''}><span>${ui('check')}</span></label>
-            <input type="text" data-opt="${i}" value="${esc(o)}" maxlength="14" placeholder="אפשרות ${i + 1}">
-            <button type="button" class="icon-btn sm danger" data-del-opt="${i}" aria-label="הסרה">${ui('close')}</button>
-          </div>`).join('')}
-          <button type="button" class="btn btn-soft sm" data-add-opt>${ui('plus')}<span>הוסף אפשרות</span></button>
-          ${d.options.length ? `<em>הסימון מגדיר את ברירת המחדל שנרשמת בלחיצה</em>` : ''}
-        </div>
-      </div>
+      <h2 class="gtitle">אפשרויות <span>לא חובה</span></h2>
+      <section class="group">
+        ${d.options.map((o, i) => `
+        <div class="row opt-row">
+          <label class="opt-default" title="ברירת מחדל"><input type="radio" name="defopt" value="${i}" ${o === d.defaultOption ? 'checked' : ''}><span>${ui('check')}</span></label>
+          <input class="row-input start" type="text" data-opt="${i}" value="${esc(o)}" maxlength="14" placeholder="אפשרות ${i + 1}">
+          <button type="button" class="mini-btn" data-del-opt="${i}" aria-label="הסרה">${ui('close')}</button>
+        </div>`).join('')}
+        <button type="button" class="row add-row" data-add-opt><span class="sq plain">${ui('plus')}</span><span class="row-title">הוסף אפשרות</span></button>
+      </section>
+      ${d.options.length ? '<p class="footnote">הסימון מגדיר את ברירת המחדל שנרשמת בלחיצה</p>' : ''}
 
       <div class="form-actions">
-        <button type="submit" class="btn btn-primary">${ui('check')}<span>שמירה</span></button>
-        <button type="button" class="btn" data-action="close-sheet">ביטול</button>
+        <button type="submit" class="btn-primary">שמירה</button>
+        ${d._isNew ? '' : `<button type="button" class="btn-danger" data-action="btn-delete" data-id="${d.id}">מחיקת הכפתור</button>`}
       </div>
     </form>`;
-  scroller.scrollTop = top;
+  window.scrollTo(0, top);
   bindButtonEditor();
 }
 
@@ -733,7 +815,7 @@ function bindButtonEditor() {
     if (c) {
       d.color = c.dataset.color;
       $$('.swatch', form).forEach(s => s.classList.toggle('on', s === c));
-      $('.sheet-head').setAttribute('style', colorVars(d.color));
+      $('#prevRow').setAttribute('style', colorVars(d.color));
       $('.icons', form).setAttribute('style', colorVars(d.color));
       return;
     }
@@ -772,7 +854,8 @@ function saveDraft() {
   const label = (d.label || '').trim();
   if (!label) {
     const inp = $('[data-f="label"]');
-    inp.classList.remove('shake'); void inp.offsetWidth; inp.classList.add('shake');
+    const row = inp.closest('.row');
+    row.classList.remove('shake'); void row.offsetWidth; row.classList.add('shake');
     inp.focus();
     return;
   }
@@ -803,34 +886,37 @@ function saveDraft() {
     p.buttons[i] = out;
   }
   save();
-  closeSheet();
-  render();
+  closeSub();
 }
 
 /* ---------- Profile actions ---------- */
 
 function renameProfile() {
   const p = currentProfile();
-  const v = $('#profileNameInput').value.trim();
-  if (!v) { $('#profileNameInput').value = p.name; return; }
+  const inp = $('#profileNameInput');
+  if (!p || !inp) return;
+  const v = inp.value.trim();
+  if (!v) { inp.value = p.name; return; }
+  if (v === p.name) return;
   p.name = v;
   save();
-  renderShell();
+  const small = $('.phead-small');
+  if (small) small.textContent = p.name;
   renderDrawer();
   toast('השם עודכן');
 }
 
-async function applyTemplate() {
+async function applyTemplate(key) {
   const p = currentProfile();
-  const key = $('#templateSelect').value;
   const t = TEMPLATES[key];
+  if (!t) return;
   const ok = await confirmDialog(`להחיל את התבנית "${t.name}"?`, 'כל הכפתורים הנוכחיים של הפרופיל יוחלפו. הרישומים הקיימים יישמרו.', 'החלפה');
   if (!ok) return;
   closeActiveEvents(p.id);
   p.template = key;
   p.buttons = t.buttons.map(makeButton);
   save();
-  render();
+  closeSub();
   toast('התבנית הוחלה');
 }
 
@@ -846,6 +932,7 @@ async function deleteProfile() {
   save();
   if (!state.profiles.length) { render(); openOnboard(false); return; }
   tab = 'main';
+  sub = null;
   render();
   renderDrawer();
 }
@@ -855,6 +942,8 @@ function selectProfile(id) {
   save();
   closeDrawer();
   viewDay = startOfDay(Date.now());
+  sub = null;
+  draft = null;
   render();
   renderDrawer();
 }
@@ -887,6 +976,7 @@ function importData(file) {
     state = s;
     save();
     tab = 'main';
+    sub = null;
     render();
     renderDrawer();
     if (!state.profiles.length) openOnboard(false);
@@ -903,12 +993,13 @@ function renderDrawer() {
     const t = TEMPLATES[p.template] || TEMPLATES.empty;
     const on = cur && p.id === cur.id;
     return `
-    <button class="pitem ${on ? 'on' : ''}" data-action="select-profile" data-id="${p.id}" style="${colorVars(t.color)}" aria-current="${on}">
-      <span class="pitem-ic">${icon(t.icon)}</span>
-      <span class="pitem-main"><b>${esc(p.name)}</b><small>${esc(t.name)} · ${p.buttons.length} כפתורים</small></span>
-      <span class="pitem-check">${ui('check')}</span>
+    <button class="row pitem ${on ? 'on' : ''}" data-action="select-profile" data-id="${p.id}" aria-current="${on}">
+      <span class="avatar" style="${colorVars(t.color)}">${esc([...p.name.trim()][0] || '?')}</span>
+      <span class="row-title">${esc(p.name)}</span>
+      <span class="row-check">${ui('check')}</span>
     </button>`;
-  }).join('');
+  }).join('') + `
+    <button class="row add-row" data-action="add-profile"><span class="sq plain round">${ui('plus')}</span><span class="row-title">הוסף פרופיל</span></button>`;
 }
 
 function openDrawer() {
@@ -933,23 +1024,24 @@ function openOnboard(cancellable) {
   const first = !state.profiles.length;
   ob.innerHTML = `
     <div class="ob-inner">
-      ${cancellable ? `<button class="icon-btn ob-close" data-action="close-onboard" aria-label="סגירה">${ui('close')}</button>` : ''}
-      <div class="ob-logo">${logoSVG()}</div>
+      ${cancellable ? `<button class="circle-btn ob-close" data-action="close-onboard" aria-label="סגירה">${ui('close')}</button>` : ''}
       <h1>${first ? 'אחת אחת' : 'פרופיל חדש'}</h1>
       <p class="ob-sub">${first ? 'מעקב בלחיצה אחת. בואו ניצור את הפרופיל הראשון.' : 'שם וסוג — וזהו.'}</p>
       <form id="obForm" autocomplete="off">
-        <label class="field"><span>שם</span><input type="text" id="obName" maxlength="30" placeholder="למשל: נועה"></label>
-        <div class="field"><span>סוג</span>
-          <div class="tpl-grid">
-            ${Object.entries(TEMPLATES).map(([k, t], i) => `
-            <button type="button" class="tpl ${k === obTemplate ? 'on' : ''}" data-tpl="${k}" style="${colorVars(t.color)};--i:${i}">
-              <span class="tpl-ic">${icon(t.icon)}</span>
-              <b>${esc(t.name)}</b>
-              <small>${t.buttons.length ? t.buttons.map(b => esc(b.label)).join(' · ') : 'בונים לבד'}</small>
-            </button>`).join('')}
-          </div>
-        </div>
-        <button type="submit" class="btn btn-primary full big">${ui('check')}<span>יצירה</span></button>
+        <input type="text" class="field-input" id="obName" maxlength="30" placeholder="שם, למשל: נועה" aria-label="שם">
+        <h2 class="gtitle">סוג</h2>
+        <section class="group">
+          ${Object.entries(TEMPLATES).map(([k, t]) => `
+          <button type="button" class="row tpl-row tpl ${k === obTemplate ? 'on' : ''}" data-tpl="${k}">
+            ${sq(t.icon, t.color)}
+            <span class="row-main">
+              <span class="row-title">${esc(t.name)}</span>
+              <span class="row-sub">${t.buttons.length ? t.buttons.map(b => esc(b.label)).join(' · ') : 'בונים לבד'}</span>
+            </span>
+            <span class="row-check">${ui('check')}</span>
+          </button>`).join('')}
+        </section>
+        <button type="submit" class="btn-primary">יצירה</button>
       </form>
     </div>`;
   ob.classList.add('open');
@@ -962,6 +1054,7 @@ function openOnboard(cancellable) {
     closeOnboard();
     closeDrawer();
     tab = 'main';
+    sub = null;
     render();
     renderDrawer();
   });
@@ -983,15 +1076,6 @@ function closeOnboard() {
   document.body.classList.remove('locked');
 }
 
-function logoSVG() {
-  return `<svg viewBox="0 0 120 120" aria-hidden="true">
-    <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8A6B"/><stop offset="1" stop-color="#8A8CFF"/></linearGradient></defs>
-    <circle cx="60" cy="60" r="46" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="12"/>
-    <circle class="logo-arc" cx="60" cy="60" r="46" fill="none" stroke="url(#lg)" stroke-width="12" stroke-linecap="round" pathLength="100" transform="rotate(-90 60 60)"/>
-    <circle cx="60" cy="60" r="20" fill="url(#lg)"/>
-  </svg>`;
-}
-
 /* ---------- Sheet ---------- */
 
 function openSheet(html) {
@@ -1007,10 +1091,9 @@ function closeSheet() {
   s.classList.remove('open');
   s.setAttribute('aria-hidden', 'true');
   document.body.classList.remove('locked');
-  draft = null;
 }
 
-/* ---------- Confirm dialog & toast ---------- */
+/* ---------- Confirm sheet & toast ---------- */
 
 function confirmDialog(title, text, okLabel = 'אישור') {
   return new Promise(resolve => {
@@ -1018,17 +1101,17 @@ function confirmDialog(title, text, okLabel = 'אישור') {
     $('#dialogTitle').textContent = title;
     $('#dialogText').textContent = text;
     $('#dialogOk').textContent = okLabel;
-    $('#dialogIc').innerHTML = ui('alert');
     d.classList.add('open');
     d.setAttribute('aria-hidden', 'false');
     const done = v => {
       d.classList.remove('open');
       d.setAttribute('aria-hidden', 'true');
-      $('#dialogOk').onclick = $('#dialogCancel').onclick = null;
+      $('#dialogOk').onclick = $('#dialogCancel').onclick = $('.dialog-backdrop').onclick = null;
       resolve(v);
     };
     $('#dialogOk').onclick = () => done(true);
     $('#dialogCancel').onclick = () => done(false);
+    $('.dialog-backdrop').onclick = () => done(false);
     setTimeout(() => $('#dialogCancel').focus(), 50);
   });
 }
@@ -1036,7 +1119,7 @@ function confirmDialog(title, text, okLabel = 'אישור') {
 let toastTimer;
 function toast(msg) {
   const t = $('#toast');
-  t.innerHTML = `${ui('check')}<span>${esc(msg)}</span>`;
+  t.textContent = msg;
   t.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
@@ -1058,6 +1141,7 @@ document.addEventListener('click', ev => {
     case 'add-profile': openOnboard(true); break;
     case 'close-onboard': closeOnboard(); break;
     case 'goto-settings': switchTab('settings'); break;
+    case 'back': closeSub(); break;
     case 'day-prev': viewDay = addDays(viewDay, -1); render(); break;
     case 'day-next': if (viewDay < startOfDay(Date.now())) { viewDay = addDays(viewDay, 1); render(); } break;
     case 'edit-event': openEventEditor(id); break;
@@ -1068,8 +1152,8 @@ document.addEventListener('click', ev => {
     case 'btn-edit': openButtonEditor(id); break;
     case 'btn-delete': deleteButton(id); break;
     case 'btn-add': openButtonEditor(null); break;
-    case 'rename-profile': renameProfile(); break;
-    case 'apply-template': applyTemplate(); break;
+    case 'open-templates': openSub('template'); break;
+    case 'apply-template': applyTemplate(el.dataset.tpl); break;
     case 'delete-profile': deleteProfile(); break;
     case 'export': exportData(); break;
     case 'import': $('#importFile').value = ''; $('#importFile').click(); break;
@@ -1077,12 +1161,17 @@ document.addEventListener('click', ev => {
 });
 
 document.addEventListener('keydown', ev => {
-  if (ev.key === 'Enter' && ev.target.id === 'profileNameInput') { ev.preventDefault(); renameProfile(); }
+  if (ev.key === 'Enter' && ev.target.id === 'profileNameInput') { ev.preventDefault(); ev.target.blur(); }
+  if (ev.key === 'Enter' && ev.target.matches('.brow[role="button"]')) { ev.preventDefault(); openButtonEditor(ev.target.dataset.id); }
   if (ev.key === 'Escape') {
     if ($('#dialog').classList.contains('open')) $('#dialogCancel').click();
     else if ($('#sheet').classList.contains('open')) closeSheet();
     else if ($('#drawer').classList.contains('open')) closeDrawer();
   }
+});
+
+document.addEventListener('change', ev => {
+  if (ev.target.id === 'profileNameInput') renameProfile();
 });
 
 $('#importFile').addEventListener('change', ev => {
@@ -1104,10 +1193,7 @@ window.addEventListener('storage', ev => {
 /* ---------- Boot ---------- */
 
 function boot() {
-  $('#menuBtn').innerHTML = ui('menu');
   $$('[data-ic]').forEach(el => { el.innerHTML = ui(el.dataset.ic); });
-  $$('[data-ic-btn]').forEach(el => { el.innerHTML = ui(el.dataset.icBtn); });
-  $('.drawer-add').innerHTML = `${ui('plus')}<span>הוסף פרופיל</span>`;
   if (state.profiles.length && !state.profiles.some(p => p.id === state.currentProfileId)) {
     state.currentProfileId = state.profiles[0].id;
     save();

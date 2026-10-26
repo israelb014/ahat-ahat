@@ -1,7 +1,7 @@
 /* אחת אחת — service worker: offline app shell + cached Heebo font */
 
-const CACHE = 'ahat-ahat-v1.0.0';
-const FONT_CSS = 'https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap';
+const CACHE = 'ahat-ahat-v1.1.0';
+const FONT_CSS = 'https://fonts.googleapis.com/css2?family=Heebo:wght@500;700;800&display=swap';
 const SHELL = [
   './',
   'index.html',
