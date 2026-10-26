@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>אחת אחת</title>
+  <meta name="description" content="מעקב בלחיצה אחת אחרי תינוק, ילד, קשיש או כל אדם">
+  <meta name="theme-color" content="#0A0C11">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="אחת אחת">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <button class="icon-btn" id="menuBtn" aria-label="פרופילים" data-action="open-drawer"></button>
+    <div class="topbar-title">
+      <span class="profile-name" id="profileName"></span>
+    </div>
+  </header>
+
+  <main id="view" class="view"></main>
+
+  <nav class="tabbar" id="tabbar" aria-label="ניווט">
+    <button class="tab" data-tab="main"><span class="tab-ic" data-ic="home"></span><span>ראשי</span></button>
+    <button class="tab" data-tab="data"><span class="tab-ic" data-ic="chart"></span><span>נתונים</span></button>
+    <button class="tab" data-tab="settings"><span class="tab-ic" data-ic="gear"></span><span>הגדרות</span></button>
+  </nav>
+
+  <div class="drawer-wrap" id="drawer" aria-hidden="true">
+    <div class="drawer-backdrop" data-action="close-drawer"></div>
+    <aside class="drawer" role="dialog" aria-label="פרופילים">
+      <div class="drawer-head">
+        <h2>פרופילים</h2>
+        <button class="icon-btn" data-action="close-drawer" aria-label="סגירה" data-ic-btn="close"></button>
+      </div>
+      <div class="drawer-list" id="drawerList"></div>
+      <button class="btn btn-primary drawer-add" data-action="add-profile"></button>
+    </aside>
+  </div>
+
+  <div class="sheet-wrap" id="sheet" aria-hidden="true">
+    <div class="sheet-backdrop" data-action="close-sheet"></div>
+    <section class="sheet" role="dialog" aria-modal="true">
+      <div class="sheet-grip"></div>
+      <div class="sheet-body" id="sheetBody"></div>
+    </section>
+  </div>
+
+  <div class="onboard" id="onboard" aria-hidden="true"></div>
+
+  <div class="dialog-wrap" id="dialog" aria-hidden="true">
+    <div class="dialog-backdrop"></div>
+    <div class="dialog" role="alertdialog" aria-modal="true">
+      <div class="dialog-ic" id="dialogIc"></div>
+      <h3 id="dialogTitle"></h3>
+      <p id="dialogText"></p>
+      <div class="dialog-actions">
+        <button class="btn" id="dialogCancel">ביטול</button>
+        <button class="btn btn-danger" id="dialogOk">אישור</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <input type="file" id="importFile" accept="application/json,.json" hidden>
+
+  <script src="app.js"></script>
+</body>
+</html>
